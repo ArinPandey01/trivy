@@ -1,0 +1,3 @@
+/* Intentionally empty — App.css owns all page styling.
+   Vite's default index.css centers content with flex, which fights the
+   dashboard's own layout, so it's cleared here rather than overridden. */

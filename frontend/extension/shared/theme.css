@@ -1,0 +1,37 @@
+/**
+ * Trivy design tokens — translucent floating glass elements on transparent body.
+ */
+:root {
+  /* Translucent frosted container backgrounds */
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-bg-strong: rgba(255, 255, 255, 0.88);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.85);
+  --glass-blur: 20px;
+
+  /* Text — dark contrast */
+  --ink: #241A22;
+  --muted: #6E5C6A;
+
+  /* Accent */
+  --accent: #5390e0;
+  --accent-soft: #afcce7;
+
+  /* Severity indicators */
+  --critical: #DC2626;
+  --high: #EA580C;
+  --medium: #D97706;
+  --low: #16A34A;
+  --info: #8C7A87;
+
+  --font-ui: -apple-system, "Segoe UI", system-ui, sans-serif;
+  --font-mono: "SFMono-Regular", "Menlo", "Consolas", monospace;
+
+  --radius-lg: 18px;
+  --radius-md: 12px;
+  --radius-pill: 999px;
+  --radius-window: 24px;
+
+  /* Subtle panel lift shadow for floating glass panels */
+  --shadow-panel: 0 8px 20px rgba(36, 26, 34, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+}
