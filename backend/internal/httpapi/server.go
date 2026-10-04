@@ -88,7 +88,7 @@ func (s *Server) createScan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	findings := append([]model.Finding{}, request.Findings...)
+	findings := validate.FilterClientFindings(request.Findings)
 	var requestCoverage *model.Coverage
 	if request.ScanMode == "active" || request.ScanMode == "combined" {
 		if !allowedIntrusiveTarget(target, s.cfg.IntrusiveHosts) {
@@ -114,11 +114,11 @@ func (s *Server) createScan(w http.ResponseWriter, r *http.Request) {
 			writeError(w, status, "scan_failed", scanErr.Error())
 			return
 		}
-		findings = append(findings, active.Findings...)
+		findings = append(validate.FilterActiveFindings(active.Findings), findings...)
 		responseCoverage := active.Coverage
 		requestCoverage = &responseCoverage
 	}
-	findings = validate.Deduplicate(findings)
+	findings = validate.Deduplicate(validate.SuppressDuplicateCredentialForms(findings))
 	response := model.ScanResponse{Findings: findings, Summary: validate.Summary(findings), Coverage: requestCoverage}
 	saved, err := s.store.Save(r.Context(), request.ScanMode, request.Target, response)
 	if err != nil {

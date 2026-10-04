@@ -99,7 +99,7 @@ func (s *Postgres) Save(ctx context.Context, mode, target string, response model
 	if err != nil {
 		return model.ScanResponse{}, err
 	}
-	return response, nil
+	return sanitized, nil
 }
 
 func (s *Postgres) Get(ctx context.Context, id string) (model.ScanResponse, error) {
@@ -139,12 +139,20 @@ func SanitizeResponse(response model.ScanResponse) model.ScanResponse {
 	result.Findings = append([]model.Finding{}, response.Findings...)
 	for i := range result.Findings {
 		finding := &result.Findings[i]
+		finding.SampleURLs = append([]string(nil), finding.SampleURLs...)
 		finding.PageURL = RedactURL(finding.PageURL)
 		finding.FormAction = RedactURL(finding.FormAction)
 		finding.ResourceURL = RedactURL(finding.ResourceURL)
 		finding.URL = RedactURL(finding.URL)
 		finding.Location = RedactURL(finding.Location)
 		finding.TestedURL = RedactURL(finding.TestedURL)
+		if finding.Value != nil {
+			redacted := "[redacted]"
+			finding.Value = &redacted
+		}
+		if finding.EvidenceSnippet != "" {
+			finding.EvidenceSnippet = "[redacted]"
+		}
 		for sampleIndex := range finding.SampleURLs {
 			finding.SampleURLs[sampleIndex] = RedactURL(finding.SampleURLs[sampleIndex])
 		}
@@ -166,11 +174,14 @@ func RedactURL(raw string) string {
 	if err != nil || parsed.Hostname() == "" || (parsed.Scheme != "http" && parsed.Scheme != "https") {
 		return raw
 	}
-	query := parsed.Query()
-	for key := range query {
-		query.Set(key, "***")
+	if parsed.Path != "" && parsed.Path != "/" {
+		parsed.Path = "/redacted"
+		parsed.RawPath = ""
 	}
-	parsed.RawQuery = query.Encode()
+	parsed.RawQuery = ""
+	parsed.ForceQuery = false
+	parsed.Fragment = ""
+	parsed.RawFragment = ""
 	return parsed.String()
 }
 

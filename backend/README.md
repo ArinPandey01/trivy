@@ -7,6 +7,13 @@ crawl with non-destructive HTTP checks.
 
 ## Run with Docker
 
+Generate the local dependency tree on the host before building the image.
+`vendor/` is not committed, and the Dockerfile builds from it:
+
+```sh
+go mod vendor
+```
+
 ```sh
 docker compose -f compose.yml up --build
 ```
@@ -30,6 +37,20 @@ go run ./cmd/server
 
 The request and finding schemas are documented in
 `../frontend/extension/API_CONTRACT.md`.
+
+## Browser findings
+
+The extension currently keeps passive-only scans local. For combined scans, it
+sends browser findings to this API. Direct passive API requests use the same
+policy. The API validates that each finding's page
+matches the target origin, discards low-confidence form, CORS-header, and HTTP
+HSTS claims, and assigns its own severity, confidence, and evidence before
+deduplication, storage, and response. Library-version and storage-key signals
+are reported as review items, not confirmed vulnerabilities. The browser's
+observations are not independently verified by this API. Active HTTP findings
+use the same cautious ratings for library versions and secret-shaped patterns.
+Stored and returned URLs retain the origin but redact non-root paths, queries,
+and fragments.
 
 ## Active scan behavior
 
