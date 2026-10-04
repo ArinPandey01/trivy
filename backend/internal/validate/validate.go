@@ -50,8 +50,11 @@ func Request(req *model.ScanRequest, maxRPS, maxConcurrency int) (*url.URL, erro
 		if err := Finding(&req.Findings[i]); err != nil {
 			return nil, fmt.Errorf("finding %d: %w", i, err)
 		}
+		page, _ := HTTPURL(req.Findings[i].PageURL)
+		if page.Scheme != target.Scheme || !strings.EqualFold(page.Host, target.Host) {
+			return nil, fmt.Errorf("finding %d: pageUrl must have the same origin as target", i)
+		}
 	}
-	req.Findings = Deduplicate(req.Findings)
 
 	if req.ScanMode != "passive" {
 		if req.RateLimit == nil {
@@ -293,6 +296,8 @@ func findingKey(finding model.Finding) string {
 		return fmt.Sprintf("cookie|%s|%v|%v|%v", finding.CookieName, pointerValue(finding.MissingSecure), pointerValue(finding.MissingHTTPOnly), pointerValue(finding.MissingSameSite))
 	case "vulnerable_library":
 		return fmt.Sprintf("library|%s|%s|%s", finding.LibraryName, finding.DetectedVersion, finding.KnownCVE)
+	case "exposed_secret":
+		return fmt.Sprintf("secret|%s|%s", finding.SecretType, canonicalPageURL(finding.PageURL))
 	case "mixed_content":
 		return fmt.Sprintf("mixed|%s|%s", finding.ResourceURL, finding.ResourceType)
 	default:
